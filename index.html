@@ -3,8 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <title>מחשבון פיצה</title>
+
   <!-- חשוב למובייל: בלי זום מוזר, רוחב מסך אמיתי -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <!-- אייקון טאב (favicon) לטאב בדפדפן -->
+  <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ctext y='0.9em' font-size='96'%3E🍕%3C/text%3E%3C/svg%3E">
+
+  <!-- אייקון למסך הבית באייפון (קובץ apple-touch-icon.png צריך להיות ליד index.html בריפו) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
   <style>
     /* ========= בסיס ========= */
@@ -460,12 +468,12 @@
       </div>
 
       <div class="results-table">
-        <div><span>קמח:</span><span id="flourTotalResult">–</span></div>
-        <div><span>מים:</span><span id="waterTotalResult">–</span></div>
-        <div><span>מלח:</span><span id="saltTotalResult">–</span></div>
-        <div><span>שמן:</span><span id="oilTotalResult">–</span></div>
-        <div><span>סוכר:</span><span id="sugarTotalResult">–</span></div>
-        <div><span>שמרים:</span><span id="yeastTotalResult">–</span></div>
+        <div><span id="flourLabel">קמח:</span><span id="flourTotalResult">–</span></div>
+        <div><span id="waterLabel">מים:</span><span id="waterTotalResult">–</span></div>
+        <div><span id="saltLabel">מלח:</span><span id="saltTotalResult">–</span></div>
+        <div><span id="oilLabel">שמן:</span><span id="oilTotalResult">–</span></div>
+        <div><span id="sugarLabel">סוכר:</span><span id="sugarTotalResult">–</span></div>
+        <div><span id="yeastLabel">שמרים:</span><span id="yeastTotalResult">–</span></div>
       </div>
     </div>
   </div>
@@ -617,8 +625,9 @@
       return {
         areaSingle,
         areaTotal,
-        ballWeight: r1(ballWeight),
-        doughTotal: r1(doughTotal),
+        ballWeight: r0(ballWeight),  // בלי שבר
+        doughTotal: r0(doughTotal),  // בלי שבר
+
         thicknessFactor: r3(thickness),
 
         flourTotal: r0(flourTotal),
@@ -706,31 +715,46 @@
     function renderResults(result, state) {
       if (!result) return;
 
-      // בצק
+      // בצק (בלי ספרות אחרי הנקודה)
       document.getElementById('ballWeightResult').textContent =
         result.ballWeight + ' גרם';
       document.getElementById('doughTotalResult').textContent =
         result.doughTotal + ' גרם';
 
-      // מרכיבים (סה״כ + אחוזים)
+      // תוויות עם אחוזים
+      document.getElementById('flourLabel').textContent =
+        'קמח:';
+
+      document.getElementById('waterLabel').textContent =
+        'מים (' + state.hydrationPct.toFixed(0) + '%):';
+
+      document.getElementById('saltLabel').textContent =
+        'מלח (' + state.saltPct.toFixed(1) + '%):';
+
+      document.getElementById('oilLabel').textContent =
+        'שמן (' + state.oilPct.toFixed(1) + '%):';
+
+      document.getElementById('sugarLabel').textContent =
+        'סוכר (' + state.sugarPct.toFixed(1) + '%):';
+
+      document.getElementById('yeastLabel').textContent =
+        'שמרים (' + result.yeastPercent.toFixed(3) + '%):';
+
+      // ערכי גרמים
       document.getElementById('flourTotalResult').textContent =
         result.flourTotal + ' גרם';
-
       document.getElementById('waterTotalResult').textContent =
-        result.waterTotal + ' גרם (' + state.hydrationPct.toFixed(0) + '%)';
-
+        result.waterTotal + ' גרם';
       document.getElementById('saltTotalResult').textContent =
-        result.saltTotal + ' גרם (' + state.saltPct.toFixed(1) + '%)';
-
+        result.saltTotal + ' גרם';
       document.getElementById('oilTotalResult').textContent =
-        result.oilTotal + ' גרם (' + state.oilPct.toFixed(1) + '%)';
-
+        result.oilTotal + ' גרם';
       document.getElementById('sugarTotalResult').textContent =
-        result.sugarTotal + ' גרם (' + state.sugarPct.toFixed(1) + '%)';
-
+        result.sugarTotal + ' גרם';
       document.getElementById('yeastTotalResult').textContent =
-        result.yeastTotal + ' גרם (' + result.yeastPercent.toFixed(3) + '%)';
+        result.yeastTotal + ' גרם';
 
+      // תצוגה למעלה
       document.getElementById('yeastPercentDisplay').textContent =
         result.yeastPercent.toFixed(3) + '%';
     }
