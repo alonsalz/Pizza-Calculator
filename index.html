@@ -239,9 +239,11 @@
     }
 
     .hero-sub {
-      font-size: 0.8rem;
-      color: #5f5145;
-    }
+  font-size: 0.95rem;      /* היה 0.8rem */
+  font-weight: 600;        /* תוספת הדגשה */
+  color: #4a3a2e;          /* טיפה כהה יותר */
+  margin-top: 0.15rem;
+}
 
     .results-line {
       display: flex;
@@ -467,17 +469,6 @@
         <div class="hero-sub" id="heroLineSub">–</div>
       </div>
 
-      <div class="field">
-        <div class="results-line">
-          <span>משקל לכדור:</span>
-          <span id="ballWeightResult">–</span>
-        </div>
-        <div class="results-line">
-          <span>סה״כ בצק:</span>
-          <span id="doughTotalResult">–</span>
-        </div>
-      </div>
-
       <div class="results-table">
         <div><span id="flourLabel">קמח</span><span id="flourTotalResult">–</span></div>
         <div><span id="waterLabel">מים</span><span id="waterTotalResult">–</span></div>
@@ -653,11 +644,6 @@
       document.getElementById('heroLineSub').textContent =
         `משקל לכדור: ${result.ballWeight} גרם · סה״כ בצק: ${result.doughTotal} גרם`;
 
-      document.getElementById('ballWeightResult').textContent =
-        result.ballWeight + ' גרם';
-      document.getElementById('doughTotalResult').textContent =
-        result.doughTotal + ' גרם';
-
       document.getElementById('flourLabel').textContent = 'קמח:';
       document.getElementById('waterLabel').textContent =
         `מים (${s.hydrationPct}%):`;
@@ -779,3 +765,4 @@
 
 </body>
 </html>
+
