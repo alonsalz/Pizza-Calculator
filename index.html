@@ -580,6 +580,77 @@
       };
     }
 
+    const STORAGE_KEY = 'pizzaCalculatorState_v1';
+
+    function saveStateToStorage(state) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        // אם חסום/פרטי – פשוט מתעלמים
+      }
+    }
+    
+    function loadStateFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+    
+        const s = JSON.parse(raw);
+    
+        // צורה
+        if (s.shape === 'round' || s.shape === 'rect') {
+          const shapeRadio = document.querySelector(`input[name="shape"][value="${s.shape}"]`);
+          if (shapeRadio) shapeRadio.checked = true;
+        }
+    
+        // מצב חישוב
+        if (s.mode === 'thickness' || s.mode === 'weight') {
+          const modeRadio = document.querySelector(`input[name="mode"][value="${s.mode}"]`);
+          if (modeRadio) modeRadio.checked = true;
+        }
+    
+        // ערכי input
+        if (typeof s.diameter === 'number') document.getElementById('diameter').value = s.diameter;
+        if (typeof s.length   === 'number') document.getElementById('length').value   = s.length;
+        if (typeof s.width    === 'number') document.getElementById('width').value    = s.width;
+        if (typeof s.doughPerPizzaInput === 'number')
+          document.getElementById('doughPerPizzaInput').value = s.doughPerPizzaInput;
+    
+        // ערכי value-display (ספרות)
+        const setDisplay = (id, val, decimals=0) => {
+          if (typeof val !== 'number') return;
+          const el = document.getElementById(id);
+          if (!el) return;
+          const factor = Math.pow(10, decimals);
+          const v = Math.round(val * factor) / factor;
+          el.textContent = v.toFixed(decimals);
+        };
+    
+        setDisplay('pizzaCount', s.pizzaCount, 0);
+        setDisplay('thickness',  s.thicknessFactor, 3);
+        setDisplay('hours',      s.hours, 1);
+        setDisplay('tempC',      s.tempC, 1);
+    
+        setDisplay('hydration',  s.hydrationPct, 0);
+        setDisplay('saltPct',    s.saltPct, 1);
+        setDisplay('oilPct',     s.oilPct, 1);
+        setDisplay('sugarPct',   s.sugarPct, 1);
+    
+        setDisplay('yeastScale',   s.yeastScale, 2);
+        setDisplay('yeastOverride', s.yeastOverridePct, 2);
+    
+        // צ'קבוקס override לשמרים
+        if (typeof s.yeastOverridePct === 'number') {
+          document.getElementById('yeastOverrideEnabled').checked = true;
+        } else {
+          document.getElementById('yeastOverrideEnabled').checked = false;
+        }
+    
+      } catch (e) {
+        // אם משהו נשבר – פשוט מתעלמים
+      }
+    }
+
     function computePizzaRecipe(s) {
       let area =
         s.shape === 'round'
@@ -706,7 +777,9 @@
       const s = getStateFromUI();
       const r = computePizzaRecipe(s);
       renderResults(r, s);
+      saveStateToStorage(s);   // 👈 חדש – שמירה בכל שינוי
     });
+
 
     function setupSteppers() {
       document.querySelectorAll('.step-btn').forEach(btn => {
@@ -762,13 +835,17 @@
       setupSteppers();
       setupInputs();
       setupRadios();
-      updateVisibility();
-      recalc();
+    
+      loadStateFromStorage();  // 👈 קודם מנסה לטעון מצב שמור
+      updateVisibility();      // 👈 מתיישר לפי shape/mode שנשמרו
+      recalc();                // 👈 מחשב ומציג תוצאות לפי המצב הטעון
     });
+
   </script>
 
 </body>
 </html>
+
 
 
 
