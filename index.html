@@ -2,7 +2,10 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>מחשבון פיצה</title>
+  <title>Pizza Calculator</title>
+
+  <!-- שם ייעודי למסך הבית באייפון -->
+  <meta name="apple-mobile-web-app-title" content="Pizza Calculator">
 
   <!-- חשוב למובייל: בלי זום מוזר, רוחב מסך אמיתי -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -17,7 +20,11 @@
   <style>
     :root {
       --bg: #f7f1e8;
-      --card-bg: #ffffff;
+      --card-bg-1: #ffffff;
+      --card-bg-2: #fffaf2;
+      --card-bg-3: #f7fff7;
+      --card-bg-4: #f5f7ff;
+      --card-bg-5: #fff5fb;
       --accent: #e4572e;
       --accent-soft: #ffe3d2;
       --accent-text: #5a2a1b;
@@ -49,13 +56,18 @@
 
     /* ========= בלוקים ========= */
     .block {
-      background: var(--card-bg);
       border-radius: 12px;
       padding: 0.75rem 1rem 1rem;
       margin-bottom: 0.85rem;
       box-shadow: 0 6px 14px rgba(0,0,0,0.05);
       border: 1px solid var(--border-soft);
     }
+
+    #block-size       { background: var(--card-bg-1); }
+    #block-fermentation { background: var(--card-bg-2); }
+    #block-profile    { background: var(--card-bg-3); }
+    #block-yeast      { background: var(--card-bg-4); }
+    #block-results    { background: var(--card-bg-5); }
 
     .block-title {
       font-weight: 650;
@@ -99,7 +111,7 @@
     .row {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.4rem;
       flex-wrap: wrap;
     }
 
@@ -166,7 +178,7 @@
     }
 
     .value-display {
-      min-width: 3.8rem;
+      min-width: 4.2rem;
       text-align: center;
       padding: 0.15rem 0.4rem;
       border-radius: 6px;
@@ -180,10 +192,11 @@
       padding: 0.25rem 0.4rem;
       border-radius: 6px;
       border: 1px solid #d4c7bb;
-      width: 5rem;
+      width: 4.2rem;            /* אותו רוחב כמו value-display */
       font-family: monospace;
       font-size: 16px; /* מונע זום */
       background: #fffdf9;
+      text-align: center;       /* מיושר כמו value-display */
     }
 
     input[type="number"]:focus {
@@ -250,7 +263,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>מחשבון פיצה</h1>
+    <h1>Pizza Calculator</h1>
 
     <!-- ========= בלוק 1 – גודל הפיצה ========= -->
     <div class="block" id="block-size">
