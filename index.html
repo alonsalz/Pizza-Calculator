@@ -23,8 +23,8 @@
       /* צבעי הבלוקים */
       --block1: #E8FAFF; /* טורקיז־רך — גודל פיצה */
       --block2: #EDF6FF; /* כחול־קריר — התפחה */
-      --block3: #F4FFF4; /* ירוק־מרווה — פרופיל בצק */
-      --block4: #FFF3F4; /* ורוד־קליל — שמרים */
+      --block3: #F4FFF4; /* ירוק־מרווה — מרכיבי הבצק */
+      --block4: #FFF3F4; /* (לא בשימוש כרגע) */
       --block5: #F2EEFF; /* סגול־ערפל — תוצאות */
 
       --accent: #e4572e;
@@ -65,11 +65,10 @@
       border: 1px solid var(--border-soft);
     }
 
-    #block-size       { background: var(--block1); }
-    #block-fermentation { background: var(--block2); }
-    #block-profile    { background: var(--block3); }
-    #block-yeast      { background: var(--block4); }
-    #block-results    { background: var(--block5); }
+    #block-size          { background: var(--block1); }
+    #block-fermentation  { background: var(--block2); }
+    #block-profile       { background: var(--block3); }
+    #block-results       { background: var(--block5); }
 
     .block-title {
       font-weight: 650;
@@ -202,6 +201,21 @@
       margin-top: 0.2rem;
     }
 
+    /* details (הגדרות מתקדמות) */
+    details summary {
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 0.35rem;
+      color: var(--accent-text);
+      list-style: none;
+    }
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+    details[open] summary {
+      font-weight: 600;
+    }
+
     /* תוצאות */
     .hero-summary {
       border-radius: 10px;
@@ -221,10 +235,37 @@
       color: #5f5145;
     }
 
+    .results-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .results-table {
+      margin-top: 0.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
     .results-table div {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 0.15rem;
+      align-items: baseline;
+      padding: 0.3rem 0.55rem;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.78);
+    }
+
+    .results-table div span:first-child {
+      font-size: 0.85rem;
+      color: #5f5145;
+    }
+
+    .results-table div span:last-child {
+      font-weight: 600;
+      font-family: monospace;
       font-size: 0.9rem;
     }
   </style>
@@ -331,9 +372,9 @@
       </div>
     </div>
 
-    <!-- ========== 3. פרופיל בצק (ירוק־מרווה) ========== -->
+    <!-- ========== 3. מרכיבי הבצק (ירוק־מרווה) ========== -->
     <div class="block" id="block-profile">
-      <div class="block-title">פרופיל בצק</div>
+      <div class="block-title">מרכיבי הבצק</div>
 
       <div class="field">
         <label>הידרציה (%)</label>
@@ -372,19 +413,19 @@
           <div class="step-btn" data-target="sugarPct" data-step="0.1">+</div>
         </div>
       </div>
-    </div>
 
-    <!-- ========== 4. שמרים (ורוד־קליל) ========== -->
-    <div class="block" id="block-yeast">
-      <div class="block-title">שמרים</div>
-
+      <!-- שורת שמרים – בסוף הבלוק, כמו שאר המרכיבים -->
       <div class="field">
-        <label>אחוז שמרים מחושב</label>
+        <label>שמרים (אחוז מחושב על הקמח)</label>
         <div class="value-display" id="yeastPercentDisplay">0.000%</div>
+        <div class="small-note">
+          מחושב אוטומטית לפי זמן ההתפחה והטמפרטורה (ניתן לכוונן בהגדרות המתקדמות).
+        </div>
       </div>
 
+      <!-- הגדרות מתקדמות לשמרים בתוך אותו בלוק -->
       <details>
-        <summary>הגדרות מתקדמות</summary>
+        <summary>הגדרות מתקדמות לשמרים</summary>
 
         <div class="field">
           <label>סקייל לשמרים</label>
@@ -396,7 +437,7 @@
         </div>
 
         <div class="field">
-          <label><input type="checkbox" id="yeastOverrideEnabled"> קביעת שמרים ידנית</label>
+          <label><input type="checkbox" id="yeastOverrideEnabled"> קביעת אחוז שמרים ידנית</label>
         </div>
 
         <div class="field">
@@ -407,11 +448,10 @@
             <div class="step-btn" data-target="yeastOverride" data-step="0.01">+</div>
           </div>
         </div>
-
       </details>
     </div>
 
-    <!-- ========== 5. תוצאות (סגול ערפל) ========== -->
+    <!-- ========== 4. תוצאות (סגול ערפל) ========== -->
     <div class="block" id="block-results">
       <div class="block-title">תוצאות</div>
 
@@ -431,6 +471,7 @@
         </div>
       </div>
 
+      <!-- כאן הדגשנו את התוצאות לכל מרכיב בקופסאות ברורות -->
       <div class="results-table">
         <div><span id="flourLabel">קמח</span><span id="flourTotalResult">–</span></div>
         <div><span id="waterLabel">מים</span><span id="waterTotalResult">–</span></div>
@@ -443,7 +484,6 @@
 
   </div>
 
-  <!-- ========== JavaScript (ללא שינוי לוגי, רק UI) ========== -->
   <script>
     /* ====== טבלת שמרים ====== */
     const TEMPS = [14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30];
@@ -500,6 +540,17 @@
       return V1 + (V2 - V1)*t;
     }
 
+    function getYeastPercent(temp, hours, scale, override) {
+      let val;
+      if (override !== null) val = override;
+      else {
+        val = interpolateYeastPercent(temp, hours) * scale;
+      }
+      if (val < 0.001) val = 0.001;
+      if (val > 2) val = 2;
+      return Math.round(val*1000)/1000;
+    }
+
     function getStateFromUI() {
       const get = id => parseFloat(document.getElementById(id).textContent);
       const getInput = id => parseFloat(document.getElementById(id).value);
@@ -522,23 +573,12 @@
         saltPct: get('saltPct'),
         oilPct: get('oilPct'),
         sugarPct: get('sugarPct'),
-        yeastScale: get('yeastScale'),
+        yeastScale: get('yeastScale') || 1.0,
         yeastOverridePct:
           document.getElementById('yeastOverrideEnabled').checked
             ? get('yeastOverride')
             : null
       };
-    }
-
-    function getYeastPercent(temp, hours, scale, override) {
-      let val;
-      if (override !== null) val = override;
-      else {
-        val = interpolateYeastPercent(temp, hours) * scale;
-      }
-      if (val < 0.001) val = 0.001;
-      if (val > 2) val = 2;
-      return Math.round(val*1000)/1000;
     }
 
     function computePizzaRecipe(s) {
@@ -596,15 +636,15 @@
     }
 
     function renderResults(result, s) {
-      document.getElementById('heroLineMain').textContent =
-        `${s.pizzaCount} פיצות ${s.shape === 'round' ? 'עגולות' : 'מלבניות'}`;
-
+      const shapeText = s.shape === 'round' ? 'עגולות' : 'מלבניות';
       const sizeText =
         s.shape === 'round'
           ? `${s.diameter} ס״מ`
           : `${s.length}×${s.width} ס״מ`;
 
-      document.getElementById('heroLineMain').textContent += `, ${sizeText}`;
+      document.getElementById('heroLineMain').textContent =
+        `${s.pizzaCount} פיצות ${shapeText}, ${sizeText}`;
+
       document.getElementById('heroLineSub').textContent =
         `משקל לכדור: ${result.ballWeight} גרם · סה״כ בצק: ${result.doughTotal} גרם`;
 
@@ -613,13 +653,20 @@
       document.getElementById('doughTotalResult').textContent =
         result.doughTotal + ' גרם';
 
+      // תוויות עם אחוזים
       document.getElementById('flourLabel').textContent = 'קמח:';
-      document.getElementById('waterLabel').textContent = `מים (${s.hydrationPct}%):`;
-      document.getElementById('saltLabel').textContent = `מלח (${s.saltPct}%):`;
-      document.getElementById('oilLabel').textContent  = `שמן (${s.oilPct}%):`;
-      document.getElementById('sugarLabel').textContent = `סוכר (${s.sugarPct}%):`;
-      document.getElementById('yeastLabel').textContent = `שמרים (${result.yeastPercent}%):`;
+      document.getElementById('waterLabel').textContent =
+        `מים (${s.hydrationPct}%):`;
+      document.getElementById('saltLabel').textContent =
+        `מלח (${s.saltPct}%):`;
+      document.getElementById('oilLabel').textContent  =
+        `שמן (${s.oilPct}%):`;
+      document.getElementById('sugarLabel').textContent =
+        `סוכר (${s.sugarPct}%):`;
+      document.getElementById('yeastLabel').textContent =
+        `שמרים (${result.yeastPercent}%):`;
 
+      // ערכים בגרמים
       document.getElementById('flourTotalResult').textContent =
         result.flourTotal + ' גרם';
       document.getElementById('waterTotalResult').textContent =
@@ -633,6 +680,7 @@
       document.getElementById('yeastTotalResult').textContent =
         result.yeastTotal + ' גרם';
 
+      // שורת השמרים בפרופיל (האחוז)
       document.getElementById('yeastPercentDisplay').textContent =
         result.yeastPercent + '%';
     }
