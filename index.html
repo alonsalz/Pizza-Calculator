@@ -15,12 +15,21 @@
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
   <style>
+    :root {
+      --bg: #f7f1e8;
+      --card-bg: #ffffff;
+      --accent: #e4572e;
+      --accent-soft: #ffe3d2;
+      --accent-text: #5a2a1b;
+      --border-soft: #e2d3c2;
+    }
+
     /* ========= בסיס ========= */
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       margin: 0;
       padding: 1rem;
-      background: #f5f5f5;
+      background: radial-gradient(circle at top, #fff8f0 0, var(--bg) 60%);
       color: #222;
       font-size: 16px; /* מונע זום-אין באייפון על אינפוטים */
     }
@@ -32,25 +41,41 @@
     }
 
     h1 {
-      font-size: 1.4rem;
-      margin-bottom: 0.75rem;
+      font-size: 1.5rem;
+      margin-bottom: 0.8rem;
       text-align: center;
+      color: var(--accent-text);
     }
 
     /* ========= בלוקים ========= */
     .block {
-      background: #fff;
-      border-radius: 8px;
+      background: var(--card-bg);
+      border-radius: 12px;
       padding: 0.75rem 1rem 1rem;
       margin-bottom: 0.85rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-soft);
     }
 
     .block-title {
-      font-weight: 600;
+      font-weight: 650;
       margin-bottom: 0.5rem;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid #eee0d0;
       padding-bottom: 0.25rem;
+      color: var(--accent-text);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.95rem;
+    }
+
+    .block-title::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
     }
 
     .field {
@@ -66,7 +91,7 @@
     .radio-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem;
+      gap: 0.5rem;
       font-size: 0.9rem;
       margin-bottom: 0.25rem;
     }
@@ -76,6 +101,40 @@
       align-items: center;
       gap: 0.25rem;
       flex-wrap: wrap;
+    }
+
+    /* ========= צ'יפים לבחירה ========= */
+    .choice-label {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .choice-label input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .choice-pill {
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid #d0c2b6;
+      background: #faf7f3;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 3.8rem;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+    }
+
+    .choice-label input:checked + .choice-pill {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
     }
 
     /* ========= סטפרים ========= */
@@ -91,45 +150,77 @@
       padding: 0.2rem 0.6rem;
       min-width: 2.3rem;
       text-align: center;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      background: #fafafa;
+      border-radius: 6px;
+      border: 1px solid #d4c7bb;
+      background: #fdf9f5;
       cursor: pointer;
       font-size: 16px; /* חשוב לאייפון */
       user-select: none;
+      transition: background 0.12s ease, transform 0.05s ease, box-shadow 0.12s ease;
     }
 
     .step-btn:active {
-      background: #e0e0e0;
+      background: #f1e3d7;
+      transform: translateY(1px);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.12);
     }
 
     .value-display {
       min-width: 3.8rem;
       text-align: center;
       padding: 0.15rem 0.4rem;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #ddcec1;
+      background: #fffdf9;
       font-family: monospace;
       font-size: 16px;
     }
 
     input[type="number"] {
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+      padding: 0.25rem 0.4rem;
+      border-radius: 6px;
+      border: 1px solid #d4c7bb;
       width: 5rem;
       font-family: monospace;
       font-size: 16px; /* מונע זום */
+      background: #fffdf9;
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(228,87,46,0.22);
+      background: #fff;
     }
 
     .small-note {
       font-size: 0.75rem;
-      color: #666;
+      color: #8a7a6e;
       margin-top: 0.2rem;
     }
 
     /* ========= תוצאות ========= */
+
+    .hero-summary {
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-soft), #ffeedd);
+      padding: 0.55rem 0.7rem;
+      margin-bottom: 0.6rem;
+      border: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .hero-main {
+      font-size: 0.95rem;
+      font-weight: 650;
+      color: var(--accent-text);
+      margin-bottom: 0.2rem;
+    }
+
+    .hero-sub {
+      font-size: 0.8rem;
+      color: #5f5145;
+    }
+
     .results-line {
       display: flex;
       justify-content: space-between;
@@ -153,6 +244,7 @@
       font-size: 0.9rem;
       margin-top: 0.4rem;
       margin-bottom: 0.2rem;
+      color: var(--accent-text);
     }
   </style>
 </head>
@@ -168,13 +260,13 @@
       <div class="field">
         <label>צורה</label>
         <div class="radio-row">
-          <label>
+          <label class="choice-label">
             <input type="radio" name="shape" value="round" checked />
-            עגולה
+            <span class="choice-pill">עגולה</span>
           </label>
-          <label>
+          <label class="choice-label">
             <input type="radio" name="shape" value="rect" />
-            מלבנית
+            <span class="choice-pill">מלבנית</span>
           </label>
         </div>
       </div>
@@ -215,15 +307,15 @@
       <div class="field">
         <label>מצב חישוב</label>
         <div class="radio-row">
-          <label>
+          <label class="choice-label">
             <input type="radio" name="mode" value="thickness" checked />
-            קובע עובי ← מקבל משקל
+            <span class="choice-pill">קובע עובי ← מקבל משקל</span>
           </label>
         </div>
         <div class="radio-row">
-          <label>
+          <label class="choice-label">
             <input type="radio" name="mode" value="weight" />
-            קובע משקל לפיצה ← מקבל עובי
+            <span class="choice-pill">קובע משקל לפיצה ← מקבל עובי</span>
           </label>
         </div>
       </div>
@@ -455,6 +547,12 @@
     <!-- ========= בלוק 5 – תוצאות ========= -->
     <div class="block" id="block-results">
       <div class="block-title">תוצאות</div>
+
+      <!-- כרטיס סיכום עליון -->
+      <div class="hero-summary">
+        <div class="hero-main" id="heroLineMain">–</div>
+        <div class="hero-sub" id="heroLineSub">–</div>
+      </div>
 
       <div class="field">
         <div class="results-line">
@@ -714,6 +812,28 @@
 
     function renderResults(result, state) {
       if (!result) return;
+
+      // hero text
+      const heroMain = document.getElementById('heroLineMain');
+      const heroSub  = document.getElementById('heroLineSub');
+
+      const count = state.pizzaCount;
+      const shapeWord = state.shape === 'round' ? 'עגולות' : 'מלבניות';
+
+      let sizeText = 'ללא מידה';
+      if (state.shape === 'round') {
+        if (state.diameter > 0) {
+          sizeText = state.diameter.toFixed(0) + ' ס״מ';
+        }
+      } else {
+        if (state.length > 0 && state.width > 0) {
+          sizeText = state.length.toFixed(0) + '×' + state.width.toFixed(0) + ' ס״מ';
+        }
+      }
+
+      heroMain.textContent = count + ' פיצות ' + shapeWord + ', ' + sizeText;
+      heroSub.textContent =
+        'משקל לכדור: ' + result.ballWeight + ' גרם · סה״כ בצק: ' + result.doughTotal + ' גרם';
 
       // בצק (בלי ספרות אחרי הנקודה)
       document.getElementById('ballWeightResult').textContent =
