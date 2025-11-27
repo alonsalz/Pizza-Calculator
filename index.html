@@ -435,6 +435,15 @@
         <div class="small-note">
           בחר פרופיל קיים או שמור את ההגדרות הנוכחיות כפרופיל חדש.
         </div>
+        
+        <div class="small-note" id="profileDirtyWarning" style="
+          display:none;
+          color:#b30000;
+          font-weight:600;
+          margin-top:0.3rem;
+        ">
+          הפרופיל שונה
+        </div>
       </div>
 
       <div class="field">
@@ -557,6 +566,40 @@
 
     const STORAGE_KEY  = 'pizzaCalculatorState_v1';
     const PROFILES_KEY = 'pizzaCalculatorProfiles_v1';
+    
+    let currentProfileName = '';
+    let currentProfileBase = null;
+    
+    const PROFILE_FIELDS = [
+      'shape', 'mode',
+      'diameter', 'length', 'width',
+      'thicknessFactor', 'doughPerPizzaInput',
+      'hydrationPct', 'saltPct', 'oilPct', 'sugarPct',
+      'yeastScale', 'yeastOverridePct'
+    ];
+    
+    function isProfileDirty(currentState) {
+      if (!currentProfileBase) return false;
+    
+      return PROFILE_FIELDS.some(key => {
+        const ref = currentProfileBase[key];
+        const now = currentState[key];
+    
+        if (ref == null && now == null) return false;
+    
+        const r = Number(ref ?? 0);
+        const n = Number(now ?? 0);
+    
+        return Math.abs(r - n) > 0.000001;
+      });
+    }
+    
+    function updateProfileDirtyWarning(isDirty) {
+      const el = document.getElementById('profileDirtyWarning');
+      if (!el) return;
+    
+      el.style.display = isDirty ? 'block' : 'none';
+    }
 
     function findBoundingIndices(value, arr) {
       if (value <= arr[0]) return [0,0];
@@ -841,7 +884,19 @@
       const select = document.getElementById('profileSelect');
       const saveBtn = document.getElementById('saveProfileBtn');
       const deleteBtn = document.getElementById('deleteProfileBtn');
+      const reloadBtn = document.getElementById('reloadProfileBtn');
 
+      if (reloadBtn) {
+        reloadBtn.addEventListener('click', () => {
+          if (!currentProfileName || !currentProfileBase) return;
+      
+          applyStateToUI(currentProfileBase);
+          updateVisibility();
+      
+          updateProfileDirtyWarning(false);
+          recalc();
+        });
+      
       if (!select || !saveBtn || !deleteBtn) return;
 
       saveBtn.addEventListener('click', () => {
@@ -911,6 +966,11 @@
 
         applyStateToUI(s);
         updateVisibility();
+      
+        currentProfileName = name;
+        currentProfileBase = structuredClone ? structuredClone(s) : JSON.parse(JSON.stringify(s));
+      
+        updateProfileDirtyWarning(false);
         recalc();
       });
     }
@@ -945,6 +1005,10 @@
       const r = computePizzaRecipe(s);
       renderResults(r, s);
       saveStateToStorage(s);
+    
+      // בדיקה אם הפרופיל שונה
+      const dirty = isProfileDirty(s);
+      updateProfileDirtyWarning(dirty);
     });
 
     function setupSteppers() {
@@ -1014,3 +1078,4 @@
 
 </body>
 </html>
+
