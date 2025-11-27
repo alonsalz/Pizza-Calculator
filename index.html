@@ -1,318 +1,1155 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pizza Calculator</title>
+  <meta charset="UTF-8" />
+  <title>Pizza Calculator</title>
 
-<style>
-body {
-    font-family: sans-serif;
-    background: #f4f7fc;
-    padding: 20px;
-    direction: rtl;
-    text-align: right;
-}
+  <!-- שם באנגלית למסך הבית באייפון -->
+  <meta name="apple-mobile-web-app-title" content="Pizza Calculator">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-.block {
-    background: white;
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 22px;
-    position: relative;
-    box-shadow: 0 2px 6px #0002;
-}
+  <!-- favicon לטאב -->
+  <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ctext y='0.9em' font-size='96'%3E🍕%3C/text%3E%3C/svg%3E">
+  <!-- אייקון למסך הבית באייפון -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-.block h2 {
-    margin-top: 0;
-    font-size: 20px;
-    margin-bottom: 10px;
-}
+  <style>
+    :root {
+      --bg: #F8F2EB;
 
-/* אייקונים של הפיצה */
-.pizza-illustration {
-    position: absolute;
-    top: 16px;        /* מוריד קצת למטה */
-    left: 12px;
-    width: 88px;      /* מיכל גדול יותר */
-    height: 88px;
-    pointer-events: none;
-    opacity: 1;
-}
+      --block1: #E8FAFF; /* גודל פיצה */
+      --block2: #EDF6FF; /* התפחה */
+      --block3: #F4FFF4; /* מרכיבי הבצק */
+      --block5: #F2EEFF; /* תוצאות */
 
-.pizza-illustration img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;     /* חובה כדי ש-scale יעבוד */
-    position: absolute;
-    inset: 0;
-    display: none;
-}
+      --accent: #e4572e;
+      --accent-soft: #ffe2d5;
+      --accent-text: #5a2a1b;
 
-/* העגולה — הגדלה של 22% */
-#pizzaRound {
-    transform: scale(1.22);
-    transform-origin: center;
-}
-
-/* שדות */
-.row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.row label {
-    width: 130px;
-    font-size: 15px;
-}
-
-input[type="number"] {
-    width: 90px;
-    padding: 8px;
-    font-size: 16px;
-    margin-left: 6px;
-}
-
-select {
-    padding: 8px;
-    font-size: 16px;
-    margin-left: 6px;
-}
-
-.stepper {
-    display: flex;
-    align-items: center;
-}
-
-.stepper button {
-    width: 34px;
-    height: 34px;
-    border: none;
-    border-radius: 8px;
-    font-size: 20px;
-    background: #dfe7ff;
-    cursor: pointer;
-    margin: 0 4px;
-}
-
-.result-block {
-    background: #ffe3c4;
-    padding: 18px;
-    border-radius: 14px;
-    margin-top: 20px;
-}
-
-.result-line {
-    font-size: 18px;
-    margin-bottom: 6px;
-}
-
-.profile-warning {
-    color: red;
-    margin-top: 6px;
-    display: none;
-}
-</style>
-</head>
-<body>
-
-<!-- בלוק צורה -->
-<div class="block">
-
-    <!-- תמונות -->
-    <div class="pizza-illustration">
-        <img src="images/Round-pizza.png" id="pizzaRound">
-        <img src="images/Detroit-pizza.png" id="pizzaRect">
-    </div>
-
-    <h2>צורת הפיצה</h2>
-
-    <div class="row">
-        <label>צורה:</label>
-        <select id="shape">
-            <option value="round">עגולה</option>
-            <option value="rect">מלבנית</option>
-        </select>
-    </div>
-
-    <div class="row">
-        <label>קוטר / אורך:</label>
-        <input type="number" id="sizeA" value="30">
-    </div>
-
-    <div class="row">
-        <label>רוחב (למלבנית):</label>
-        <input type="number" id="sizeB" value="30">
-    </div>
-
-</div>
-
-<!-- בלוק עובי -->
-<div class="block">
-    <h2>עובי</h2>
-    <div class="row">
-        <label>עובי (ס״מ):</label>
-        <input type="number" id="thickness" step="0.01" value="0.39">
-    </div>
-</div>
-
-<!-- בלוק פיצות -->
-<div class="block">
-    <h2>מספר פיצות</h2>
-    <div class="row">
-        <label>כמות:</label>
-
-        <div class="stepper">
-            <button onclick="stepCount(-1)">−</button>
-            <input type="number" id="pizzaCount" value="1" min="1">
-            <button onclick="stepCount(1)">+</button>
-        </div>
-    </div>
-</div>
-
-<!-- בלוק זמן וטמפרטורה -->
-<div class="block">
-    <h2>זמן וטמפרטורה</h2>
-
-    <div class="row">
-        <label>זמן התפחה (ש׳):</label>
-        <input type="number" id="time" step="0.5" value="6" min="3" max="36">
-    </div>
-
-    <div class="row">
-        <label>טמפרטורה (°C):</label>
-        <input type="number" id="temp" step="0.5" value="25" min="14" max="30">
-    </div>
-</div>
-
-<!-- בלוק מרכיבי בצק -->
-<div class="block">
-    <h2>מרכיבי הבצק</h2>
-
-    <div class="row">
-        <label>הידרציה (%):</label>
-        <input type="number" id="hydration" value="60">
-    </div>
-
-    <div class="row">
-        <label>מלח (%):</label>
-        <input type="number" id="salt" value="2.5">
-    </div>
-
-    <div class="row">
-        <label>שמן (%):</label>
-        <input type="number" id="oil" value="2">
-    </div>
-
-    <div class="row">
-        <label>סוכר (%):</label>
-        <input type="number" id="sugar" value="1">
-    </div>
-
-    <div class="row">
-        <label>שמרים (%):</label>
-        <input type="number" id="yeast" value="0.25">
-    </div>
-</div>
-
-<!-- תוצאות -->
-<div class="result-block">
-    <div class="result-line" id="resultPizzaWeight"></div>
-    <div class="result-line" id="resultTotalWeight"></div>
-    <div class="result-line" id="resultBall"></div>
-    <div class="result-line" id="resultWater"></div>
-    <div class="result-line" id="resultSalt"></div>
-    <div class="result-line" id="resultOil"></div>
-    <div class="result-line" id="resultSugar"></div>
-    <div class="result-line" id="resultYeast"></div>
-</div>
-
-<script>
-function updateIllustration() {
-    const shape = document.getElementById("shape").value;
-    const round = document.getElementById("pizzaRound");
-    const rect = document.getElementById("pizzaRect");
-
-    if (shape === "round") {
-        round.style.display = "block";
-        rect.style.display = "none";
-    } else {
-        round.style.display = "none";
-        rect.style.display = "block";
+      --border-soft: #e2d3c2;
     }
-}
 
-function stepCount(dir) {
-    const input = document.getElementById("pizzaCount");
-    let v = parseInt(input.value);
-    v += dir;
-    if (v < 1) v = 1;
-    input.value = v;
-    calc();
-}
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: radial-gradient(circle at top, #FFF8F0 0, var(--bg) 60%);
+      color: #222;
+      font-size: 16px;
+    }
 
-function calc() {
-    updateIllustration();
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding-bottom: 2rem;
+    }
 
-    const shape = document.getElementById("shape").value;
-    const A = parseFloat(document.getElementById("sizeA").value);
-    const B = parseFloat(document.getElementById("sizeB").value);
-    const T = parseFloat(document.getElementById("thickness").value);
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.8rem;
+      text-align: center;
+      color: var(--accent-text);
+    }
 
-    let area = shape === "round"
-        ? Math.PI * Math.pow(A/2, 2)
-        : A * B;
+    .block {
+      border-radius: 12px;
+      padding: 0.75rem 1rem 1rem;
+      margin-bottom: 0.85rem;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-soft);
+    }
 
-    const pizzaWeight = area * T * 0.31;
-    const count = parseInt(document.getElementById("pizzaCount").value);
-    const total = pizzaWeight * count;
+    #block-size         { background: var(--block1); position: relative; }
+    #block-fermentation { background: var(--block2); }
+    #block-profile      { background: var(--block3); }
+    #block-results      { background: var(--block5); }
 
-    const hydration = parseFloat(document.getElementById("hydration").value)/100;
-    const salt = parseFloat(document.getElementById("salt").value)/100;
-    const oil = parseFloat(document.getElementById("oil").value)/100;
-    const sugar = parseFloat(document.getElementById("sugar").value)/100;
-    const yeast = parseFloat(document.getElementById("yeast").value)/100;
+    .block-title {
+      font-weight: 650;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid #ddd0c9;
+      padding-bottom: 0.25rem;
+      color: var(--accent-text);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.95rem;
+    }
 
-    const flour = total / (1 + hydration + salt + oil + sugar + yeast);
-    const water = flour * hydration;
-    const saltW = flour * salt;
-    const oilW = flour * oil;
-    const sugarW = flour * sugar;
-    const yeastW = flour * yeast;
+    .block-title::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
 
-    document.getElementById("resultPizzaWeight").textContent =
-        "משקל פיצה אחת: " + Math.round(pizzaWeight) + " גרם";
+    .field { margin-bottom: 0.6rem; }
 
-    document.getElementById("resultTotalWeight").textContent =
-        "סה״כ בצק: " + Math.round(total) + " גרם";
+    .field label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
 
-    document.getElementById("resultBall").textContent =
-        "משקל לכדור: " + Math.round(pizzaWeight) + " גרם";
+    .radio-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
 
-    document.getElementById("resultWater").textContent =
-        "מים (" + (hydration*100) + "%): " + Math.round(water) + " גרם";
+    .choice-label {
+      position: relative;
+      cursor: pointer;
+    }
 
-    document.getElementById("resultSalt").textContent =
-        "מלח (" + (salt*100) + "%): " + Math.round(saltW) + " גרם";
+    .choice-label input {
+      position: absolute;
+      opacity: 0;
+    }
 
-    document.getElementById("resultOil").textContent =
-        "שמן (" + (oil*100) + "%): " + Math.round(oilW) + " גרם";
+    .choice-pill {
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid #d0c2b6;
+      background: #faf7f3;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 3.8rem;
+      transition: all 0.15s ease;
+    }
 
-    document.getElementById("resultSugar").textContent =
-        "סוכר (" + (sugar*100) + "%): " + Math.round(sugarW) + " גרם";
+    .choice-label input:checked + .choice-pill {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
 
-    document.getElementById("resultYeast").textContent =
-        "שמרים (" + (yeast*100) + "%): " + Math.round(yeastW) + " גרם";
-}
+    .step-row {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      direction: ltr; /* מינוס משמאל, פלוס מימין */
+    }
 
-document.querySelectorAll("input, select").forEach(e => {
-    e.addEventListener("input", calc);
-});
+    .step-btn,
+    .value-display {
+      height: 2.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      border: 1px solid #d4c7bb;
+      background: #FDF9F5;
+      box-sizing: border-box;
+      font-family: monospace;
+      font-size: 16px;
+    }
 
-calc();
-updateIllustration();
-</script>
+    .step-btn {
+      min-width: 2rem;
+      padding: 0 0.6rem;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
 
+    .step-btn:active {
+      background: #f1e3d7;
+      transform: translateY(1px);
+    }
+
+    .value-display {
+      min-width: 3.8rem;
+      padding: 0 0.6rem;
+    }
+
+    .value-display.full-width {
+      width: 100%;
+      justify-content: center;
+    }
+
+    input[type="number"] {
+      height: 2.2rem;
+      padding: 0 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #d4c7bb;
+      background: #fffdf9;
+      font-family: monospace;
+      font-size: 16px;
+      box-sizing: border-box;
+      width: 4.2rem;
+      text-align: center;
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(228,87,46,0.22);
+      background: #fff;
+    }
+
+    .small-note {
+      font-size: 0.75rem;
+      color: #8a7a6e;
+      margin-top: 0.2rem;
+    }
+
+    .profile-dirty-note {
+      font-size: 0.8rem;
+      color: #c0392b;
+      margin-top: 0.2rem;
+      display: none;
+    }
+
+    details summary {
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 0.35rem;
+      color: var(--accent-text);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details summary::before {
+      content: "▾";
+      font-size: 0.8rem;
+    }
+
+    details[open] summary::before {
+      content: "▴";
+    }
+
+    .hero-summary {
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-soft), #ffeedd);
+      padding: 0.55rem 0.7rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-main {
+      font-size: 0.95rem;
+      font-weight: 650;
+      color: var(--accent-text);
+    }
+
+    .hero-sub {
+      font-size: 0.85rem;
+      font-weight: 550;
+      color: #4a3a2e;
+      margin-top: 0.2rem;
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .results-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .results-table {
+      margin-top: 0.4rem;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.3rem;
+    }
+
+    .results-table div {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 0.3rem 0.55rem;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.78);
+    }
+
+    .results-table div span:first-child {
+      font-size: 0.8rem;
+      color: #5f5145;
+      margin-bottom: 0.05rem;
+    }
+
+    .results-table div span:last-child {
+      font-weight: 600;
+      font-family: monospace;
+      font-size: 0.95rem;
+    }
+
+    .profile-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .profile-row select {
+      flex: 1;
+      height: 2.2rem;
+      border-radius: 6px;
+      border: 1px solid #d4c7bb;
+      background: #fffdf9;
+      font-size: 0.9rem;
+      padding: 0 0.4rem;
+    }
+
+    .profile-row button {
+      height: 2.2rem;
+      padding: 0 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #d4c7bb;
+      background: #f8f0e8;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .profile-row button:active {
+      background: #f1e3d7;
+      transform: translateY(1px);
+    }
+
+    /* תמונות הפיצה בבלוק הראשון */
+    .pizza-illustration {
+      position: absolute;
+      top: 48px;   /* קצת יותר למטה */
+      left: 8px;
+      width: 110px;  /* שתהיינה יותר גדולות */
+      height: 110px;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .pizza-illustration img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+
+    /* שהעגולה תהיה קצת יותר גדולה ו"נוכחת" */
+    #pizzaRound {
+      transform: scale(1.06);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Pizza Calculator</h1>
+
+    <!-- 1. גודל פיצה -->
+    <div class="block" id="block-size">
+      <div class="block-title">גודל הפיצה 🍕</div>
+
+      <!-- תמונות פיצה -->
+      <div class="pizza-illustration">
+        <img src="Round-pizza.png"   alt="פיצה עגולה"     id="pizzaRound">
+        <img src="Detroit-pizza.png" alt="פיצה מלבנית"   id="pizzaRect">
+      </div>
+
+      <div class="field">
+        <label>צורה</label>
+        <div class="radio-row">
+          <label class="choice-label">
+            <input type="radio" name="shape" value="round" checked>
+            <span class="choice-pill">עגולה</span>
+          </label>
+          <label class="choice-label">
+            <input type="radio" name="shape" value="rect">
+            <span class="choice-pill">מלבנית</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field" id="field-diameter">
+        <label>קוטר (ס״מ)</label>
+        <input type="number" id="diameter" value="30" min="1" step="0.5">
+      </div>
+
+      <div class="field" id="field-rect" style="display:none;">
+        <label>אורך × רוחב (ס״מ)</label>
+        <div class="row">
+          <input type="number" id="length" placeholder="אורך" min="1" step="0.5">
+          <input type="number" id="width"  placeholder="רוחב" min="1" step="0.5">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>מספר פיצות</label>
+        <div class="step-row">
+          <div class="step-btn" data-target="pizzaCount" data-step="-1" data-min="1">–</div>
+          <div class="value-display" id="pizzaCount">1</div>
+          <div class="step-btn" data-target="pizzaCount" data-step="1" data-min="1">+</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>מצב חישוב</label>
+        <div class="radio-row">
+          <label class="choice-label">
+            <input type="radio" name="mode" value="thickness" checked>
+            <span class="choice-pill">קובע עובי ← מקבל משקל</span>
+          </label>
+          <label class="choice-label">
+            <input type="radio" name="mode" value="weight">
+            <span class="choice-pill">קובע משקל ← מקבל עובי</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field" id="field-thickness">
+        <label>עובי (גרם לס״מ²)</label>
+        <div class="step-row">
+          <div class="step-btn" data-target="thickness" data-step="-0.1"  data-min="0">––</div>
+          <div class="step-btn" data-target="thickness" data-step="-0.01" data-min="0">–</div>
+          <div class="value-display" id="thickness">0.39</div>
+          <div class="step-btn" data-target="thickness" data-step="0.01">+</div>
+          <div class="step-btn" data-target="thickness" data-step="0.1">++</div>
+        </div>
+        <div class="small-note">מבוסס על 30 ס״מ / 276 גרם</div>
+      </div>
+
+      <div class="field" id="field-dough-per-pizza" style="display:none;">
+        <label>משקל בצק לפיצה אחת (גרם)</label>
+        <input type="number" id="doughPerPizzaInput" value="276" min="1">
+      </div>
+    </div>
+
+    <!-- 2. התפחה -->
+    <div class="block" id="block-fermentation">
+      <div class="block-title">התפחה ⏱️</div>
+
+      <div class="field">
+        <label>זמן (שעות)</label>
+        <div class="step-row">
+          <div class="step-btn" data-target="hours" data-step="-1"   data-min="3" data-max="36">––</div>
+          <div class="step-btn" data-target="hours" data-step="-0.5" data-min="3" data-max="36">–</div>
+          <div class="value-display" id="hours">6</div>
+          <div class="step-btn" data-target="hours" data-step="0.5"  data-min="3" data-max="36">+</div>
+          <div class="step-btn" data-target="hours" data-step="1"    data-min="3" data-max="36">++</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>טמפרטורה (°C)</label>
+        <div class="step-row">
+          <div class="step-btn" data-target="tempC" data-step="-0.5" data-min="14" data-max="30">–</div>
+          <div class="value-display" id="tempC">25</div>
+          <div class="step-btn" data-target="tempC" data-step="0.5"  data-min="14" data-max="30">+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. מרכיבי הבצק -->
+    <div class="block" id="block-profile">
+      <div class="block-title">מרכיבי הבצק 🧪</div>
+
+      <div class="field">
+        <label>פרופיל בצק</label>
+        <div class="profile-row">
+          <select id="profileSelect">
+            <option value="">ללא פרופיל</option>
+          </select>
+          <button type="button" id="saveProfileBtn">שמור</button>
+          <button type="button" id="reloadProfileBtn">שחזר</button>
+          <button type="button" id="deleteProfileBtn">מחק</button>
+        </div>
+        <div class="small-note">
+          בחר פרופיל קיים או שמור את ההגדרות הנוכחיות כפרופיל חדש.
+        </div>
+        <div class="profile-dirty-note" id="profileDirtyNote">
+          הפרופיל שונה
+        </div>
+      </div>
+
+      <div class="field">
+        <label>הידרציה (%)</label>
+        <div class="step-row">
+          <div class="step-btn" data-target="hydration" data-step="-5" data-min="40">––</div>
+          <div class="step-btn" data-target="hydration" data-step="-1">–</div>
+          <div class="value-display" id="hydration">60</div>
+          <div class="step-btn" data-target="hydration" data-step="1">+</div>
+          <div class="step-btn" data-target="hydration" data-step="5">++</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>מלח (%)</label>
+        <div class="step-row">
+          <div class="step-btn" data-target="saltPct" data-step="-0.1" data-min="0" data-max="5">–</div>
+          <div class="value-display" id="saltPct">2.5</div>
+          <div class="step-btn" data-target="saltPct" data-step="0.1">+</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>שמן (%)</label>
+        <div class="step-row">
+          <div class="step-btn" data-target="oilPct" data-step="-0.1" data-min="0" data-max="5">–</div>
+          <div class="value-display" id="oilPct">2.0</div>
+          <div class="step-btn" data-target="oilPct" data-step="0.1">+</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>סוכר (%)</label>
+        <div class="step-row">
+          <div class="step-btn" data-target="sugarPct" data-step="-0.1" data-min="0" data-max="5">–</div>
+          <div class="value-display" id="sugarPct">1.0</div>
+          <div class="step-btn" data-target="sugarPct" data-step="0.1">+</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>שמרים (%)</label>
+        <div class="value-display full-width" id="yeastPercentDisplay">0.000</div>
+        <div class="small-note">
+          מחושב אוטומטית לפי זמן ההתפחה והטמפרטורה (ניתן לכוונן בהגדרות המתקדמות).
+        </div>
+      </div>
+
+      <details>
+        <summary>הגדרות מתקדמות לשמרים</summary>
+
+        <div class="field">
+          <label>סקייל לשמרים</label>
+          <div class="step-row">
+            <div class="step-btn" data-target="yeastScale" data-step="-0.05" data-min="0.5" data-max="1.5">–</div>
+            <div class="value-display" id="yeastScale">1.0</div>
+            <div class="step-btn" data-target="yeastScale" data-step="0.05">+</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label><input type="checkbox" id="yeastOverrideEnabled"> קביעת אחוז שמרים ידנית</label>
+        </div>
+
+        <div class="field">
+          <label>ערך ידני (%)</label>
+          <div class="step-row">
+            <div class="step-btn" data-target="yeastOverride" data-step="-0.01" data-min="0" data-max="2">–</div>
+            <div class="value-display" id="yeastOverride">0.20</div>
+            <div class="step-btn" data-target="yeastOverride" data-step="0.01">+</div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- 4. תוצאות -->
+    <div class="block" id="block-results">
+      <div class="block-title">תוצאות 📊</div>
+
+      <div class="hero-summary">
+        <div class="hero-main" id="heroLineMain">–</div>
+        <div class="hero-sub"  id="heroLineSub">–</div>
+      </div>
+
+      <div class="results-table">
+        <div><span id="flourLabel">קמח</span><span id="flourTotalResult">–</span></div>
+        <div><span id="waterLabel">מים</span><span id="waterTotalResult">–</span></div>
+        <div><span id="saltLabel">מלח</span><span id="saltTotalResult">–</span></div>
+        <div><span id="oilLabel">שמן</span><span id="oilTotalResult">–</span></div>
+        <div><span id="sugarLabel">סוכר</span><span id="sugarTotalResult">–</span></div>
+        <div><span id="yeastLabel">שמרים</span><span id="yeastTotalResult">–</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ====== טבלת שמרים ======
+    const TEMPS = [14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30];
+    const HOURS = [2,3,4,5,6,7,8,9,10,12,16,20,24,28,32,36];
+
+    const YEAST_TABLE = [
+      [1.246,1.112,0.896,0.704,0.576,0.448,0.384,0.32,0.288,0.224,0.167,0.112,0.102,0.079,0.056,0.042],
+      [1.224,0.986,0.832,0.64,0.5,0.384,0.32,0.256,0.224,0.192,0.128,0.099,0.075,0.052,0.048,0.036],
+      [1.112,0.896,0.704,0.512,0.384,0.32,0.256,0.224,0.192,0.16,0.12,0.08,0.052,0.048,0.04,0.03],
+      [0.968,0.768,0.576,0.39,0.32,0.256,0.224,0.192,0.16,0.128,0.099,0.064,0.048,0.04,0.032,0.028],
+      [0.923,0.704,0.512,0.384,0.32,0.234,0.192,0.16,0.144,0.128,0.092,0.056,0.046,0.038,0.031,0.026],
+      [0.896,0.65,0.448,0.32,0.256,0.192,0.16,0.144,0.128,0.096,0.064,0.048,0.043,0.035,0.022,0.018],
+      [0.832,0.576,0.351,0.284,0.192,0.16,0.128,0.112,0.096,0.074,0.052,0.037,0.031,0.024,0.021,0.018],
+      [0.798,0.397,0.284,0.192,0.16,0.128,0.096,0.088,0.08,0.056,0.04,0.034,0.027,0.024,0.021,0.016],
+      [0.448,0.256,0.192,0.16,0.128,0.096,0.08,0.064,0.056,0.048,0.038,0.027,0.023,0.019,0.015,0.011],
+      [0.384,0.224,0.189,0.128,0.096,0.08,0.07,0.06,0.05,0.04,0.028,0.022,0.016,0.015,0.013,0.01],
+      [0.32,0.198,0.176,0.096,0.08,0.064,0.056,0.048,0.04,0.032,0.024,0.016,0.014,0.011,0.01,0.009],
+      [0.256,0.188,0.128,0.096,0.064,0.056,0.048,0.04,0.032,0.025,0.018,0.015,0.011,0.01,0.009,0.008],
+      [0.192,0.128,0.096,0.064,0.056,0.048,0.04,0.032,0.028,0.023,0.017,0.013,0.009,0.008,0.008,0.007],
+      [0.16,0.126,0.094,0.058,0.048,0.04,0.032,0.028,0.024,0.02,0.015,0.009,0.008,0.007,0.006,0.005],
+      [0.128,0.096,0.08,0.053,0.043,0.032,0.028,0.024,0.02,0.016,0.014,0.008,0.006,0.006,0.005,0.004],
+      [0.122,0.09,0.056,0.048,0.04,0.03,0.024,0.021,0.018,0.014,0.01,0.006,0.004,0.005,0.003,0.002],
+      [0.118,0.086,0.048,0.04,0.032,0.024,0.02,0.018,0.016,0.012,0.008,0.006,0.004,0.004,0.003,0.001]
+    ];
+
+    const STORAGE_KEY  = 'pizzaCalculatorState_v5';
+    const PROFILES_KEY = 'pizzaCalculatorProfiles_v5';
+
+    let currentProfileName = '';
+    let currentProfileBase = null;
+
+    const PROFILE_FIELDS = [
+      'shape',
+      'mode',
+      'diameter',
+      'length',
+      'width',
+      'thicknessFactor',
+      'doughPerPizzaInput',
+      'hydrationPct',
+      'saltPct',
+      'oilPct',
+      'sugarPct',
+      'yeastScale',
+      'yeastOverridePct'
+    ];
+
+    function findBoundingIndices(value, arr) {
+      if (value <= arr[0]) return [0,0];
+      const last = arr.length - 1;
+      if (value >= arr[last]) return [last,last];
+      for (let i = 0; i < last; i++) {
+        if (arr[i] <= value && value <= arr[i+1]) return [i,i+1];
+      }
+      return [last,last];
+    }
+
+    function interpolateYeastPercent(temp, hours) {
+      const [tiL, tiH] = findBoundingIndices(temp, TEMPS);
+      const [hiL, hiH] = findBoundingIndices(hours, HOURS);
+
+      const T1 = TEMPS[tiL], T2 = TEMPS[tiH];
+      const H1 = HOURS[hiL], H2 = HOURS[hiH];
+
+      const Q11 = YEAST_TABLE[tiL][hiL];
+      const Q12 = YEAST_TABLE[tiL][hiH];
+      const Q21 = YEAST_TABLE[tiH][hiL];
+      const Q22 = YEAST_TABLE[tiH][hiH];
+
+      const t = (T2 === T1 ? 0 : (temp - T1) / (T2 - T1));
+      const h = (H2 === H1 ? 0 : (hours - H1) / (H2 - H1));
+
+      const V1 = Q11 + (Q12 - Q11) * h;
+      const V2 = Q21 + (Q22 - Q21) * h;
+
+      return V1 + (V2 - V1) * t;
+    }
+
+    function getYeastPercent(temp, hours, scale, override) {
+      let val;
+      if (override !== null && override !== undefined) {
+        val = override;
+      } else {
+        val = interpolateYeastPercent(temp, hours) * (scale || 1.0);
+      }
+      if (val < 0.001) val = 0.001;
+      if (val > 2)     val = 2;
+      return Math.round(val * 1000) / 1000;
+    }
+
+    function getStateFromUI() {
+      const get = id => parseFloat(document.getElementById(id).textContent);
+      const getInput = id => parseFloat(document.getElementById(id).value);
+
+      const shape = document.querySelector('input[name="shape"]:checked').value;
+      const mode  = document.querySelector('input[name="mode"]:checked').value;
+
+      return {
+        shape,
+        diameter: getInput('diameter'),
+        length:   getInput('length'),
+        width:    getInput('width'),
+        pizzaCount: get('pizzaCount'),
+        mode,
+        thicknessFactor: get('thickness'),
+        doughPerPizzaInput: getInput('doughPerPizzaInput'),
+        hours: get('hours'),
+        tempC: get('tempC'),
+        hydrationPct: get('hydration'),
+        saltPct: get('saltPct'),
+        oilPct: get('oilPct'),
+        sugarPct: get('sugarPct'),
+        yeastScale: get('yeastScale') || 1.0,
+        yeastOverridePct:
+          document.getElementById('yeastOverrideEnabled').checked
+            ? get('yeastOverride')
+            : null
+      };
+    }
+
+    function computePizzaRecipe(s) {
+      let area =
+        s.shape === 'round'
+          ? Math.PI * (s.diameter / 2) ** 2
+          : (s.length || 0) * (s.width || 0);
+
+      let doughPerPizza = s.mode === 'thickness'
+        ? area * s.thicknessFactor
+        : s.doughPerPizzaInput;
+
+      let thickness = s.mode === 'thickness'
+        ? s.thicknessFactor
+        : doughPerPizza / (area || 1);
+
+      const doughTotal = doughPerPizza * s.pizzaCount;
+
+      const H = s.hydrationPct / 100;
+      const A = s.saltPct      / 100;
+      const O = s.oilPct       / 100;
+      const U = s.sugarPct     / 100;
+
+      const factor = 1 + H + A + O + U;
+
+      const flour = doughTotal / factor;
+      const water = flour * H;
+      const salt  = flour * A;
+      const oil   = flour * O;
+      const sugar = flour * U;
+
+      const yeastPct = getYeastPercent(s.tempC, s.hours, s.yeastScale, s.yeastOverridePct);
+      const yeast    = flour * yeastPct / 100;
+
+      const r0 = x => Math.round(x);
+      const r1 = x => Math.round(x * 10)  / 10;
+      const r2 = x => Math.round(x * 100) / 100;
+      const r3 = x => Math.round(x * 1000)/ 1000;
+
+      return {
+        doughPerPizza: r0(doughPerPizza),
+        doughTotal:    r0(doughTotal),
+        ballWeight:    r0(doughPerPizza),
+
+        flourTotal: r0(flour),
+        waterTotal: r0(water),
+        saltTotal:  r1(salt),
+        oilTotal:   r1(oil),
+        sugarTotal: r1(sugar),
+        yeastTotal: r2(yeast),
+
+        yeastPercent: r3(yeastPct),
+        thickness
+      };
+    }
+
+    function renderResults(result, s) {
+      const shapeText =
+        s.shape === 'round' ? 'עגולות' : 'מלבניות';
+      const sizeText =
+        s.shape === 'round'
+          ? `${s.diameter} ס״מ`
+          : `${s.length}×${s.width} ס״מ`;
+
+      document.getElementById('heroLineMain').textContent =
+        `${s.pizzaCount} פיצות ${shapeText}, ${sizeText}`;
+
+      document.getElementById('heroLineSub').textContent =
+        `משקל לכדור: ${result.ballWeight} גרם · סה״כ בצק: ${result.doughTotal} גרם`;
+
+      document.getElementById('flourLabel').textContent  = 'קמח:';
+      document.getElementById('waterLabel').textContent  = `מים (${s.hydrationPct}%):`;
+      document.getElementById('saltLabel').textContent   = `מלח (${s.saltPct}%):`;
+      document.getElementById('oilLabel').textContent    = `שמן (${s.oilPct}%):`;
+      document.getElementById('sugarLabel').textContent  = `סוכר (${s.sugarPct}%):`;
+      document.getElementById('yeastLabel').textContent  = `שמרים (${result.yeastPercent}%):`;
+
+      document.getElementById('flourTotalResult').textContent =
+        result.flourTotal + ' גרם';
+      document.getElementById('waterTotalResult').textContent =
+        result.waterTotal + ' גרם';
+      document.getElementById('saltTotalResult').textContent  =
+        result.saltTotal + ' גרם';
+      document.getElementById('oilTotalResult').textContent   =
+        result.oilTotal + ' גרם';
+      document.getElementById('sugarTotalResult').textContent =
+        result.sugarTotal + ' גרם';
+      document.getElementById('yeastTotalResult').textContent =
+        result.yeastTotal + ' גרם';
+
+      document.getElementById('yeastPercentDisplay').textContent =
+        result.yeastPercent.toString();
+    }
+
+    function applyStateToUI(s) {
+      // צורה
+      if (s.shape === 'round' || s.shape === 'rect') {
+        const shapeRadio = document.querySelector(`input[name="shape"][value="${s.shape}"]`);
+        if (shapeRadio) shapeRadio.checked = true;
+      }
+
+      // מצב חישוב
+      if (s.mode === 'thickness' || s.mode === 'weight') {
+        const modeRadio = document.querySelector(`input[name="mode"][value="${s.mode}"]`);
+        if (modeRadio) modeRadio.checked = true;
+      }
+
+      // ערכי input
+      if (typeof s.diameter === 'number') document.getElementById('diameter').value = s.diameter;
+      if (typeof s.length   === 'number') document.getElementById('length').value   = s.length;
+      if (typeof s.width    === 'number') document.getElementById('width').value    = s.width;
+      if (typeof s.doughPerPizzaInput === 'number') {
+        document.getElementById('doughPerPizzaInput').value = s.doughPerPizzaInput;
+      }
+
+      const setDisplay = (id, val, decimals=0) => {
+        if (typeof val !== 'number') return;
+        const el = document.getElementById(id);
+        if (!el) return;
+        const factor = Math.pow(10, decimals);
+        const v = Math.round(val * factor) / factor;
+        el.textContent = v.toFixed(decimals);
+      };
+
+      if (typeof s.pizzaCount       === 'number') setDisplay('pizzaCount', s.pizzaCount, 0);
+      if (typeof s.thicknessFactor  === 'number') setDisplay('thickness',  s.thicknessFactor, 2);
+      if (typeof s.hours            === 'number') setDisplay('hours',      s.hours, 1);
+      if (typeof s.tempC            === 'number') setDisplay('tempC',      s.tempC, 1);
+
+      setDisplay('hydration',  s.hydrationPct, 0);
+      setDisplay('saltPct',    s.saltPct, 1);
+      setDisplay('oilPct',     s.oilPct, 1);
+      setDisplay('sugarPct',   s.sugarPct, 1);
+
+      setDisplay('yeastScale',    s.yeastScale, 2);
+      setDisplay('yeastOverride', s.yeastOverridePct, 2);
+
+      if (typeof s.yeastOverridePct === 'number') {
+        document.getElementById('yeastOverrideEnabled').checked = true;
+      } else {
+        document.getElementById('yeastOverrideEnabled').checked = false;
+      }
+    }
+
+    function saveStateToStorage(state) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function loadStateFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        applyStateToUI(s);
+      } catch (e) {}
+    }
+
+    function loadProfilesFromStorage() {
+      try {
+        const raw = localStorage.getItem(PROFILES_KEY);
+        if (!raw) return {};
+        const obj = JSON.parse(raw);
+        return obj && typeof obj === 'object' ? obj : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveProfilesToStorage(profiles) {
+      try {
+        localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+      } catch (e) {}
+    }
+
+    function populateProfileSelect(profiles) {
+      const select = document.getElementById('profileSelect');
+      if (!select) return;
+
+      const currentValue = select.value;
+
+      while (select.options.length > 1) {
+        select.remove(1);
+      }
+
+      Object.keys(profiles).forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+
+      if (currentValue && profiles[currentValue]) {
+        select.value = currentValue;
+      } else {
+        select.value = '';
+      }
+    }
+
+    function isCurrentProfileDirty(state) {
+      if (!currentProfileName || !currentProfileBase) return false;
+      const p = currentProfileBase;
+
+      return PROFILE_FIELDS.some(key => {
+        const v1 = p[key];
+        const v2 = state[key];
+
+        if (v1 == null && v2 == null) return false;
+
+        const n1 = v1 == null ? 0 : Number(v1);
+        const n2 = v2 == null ? 0 : Number(v2);
+
+        return Math.abs(n1 - n2) > 1e-4;
+      });
+    }
+
+    function updateProfileDirtyNote(isDirty) {
+      const el = document.getElementById('profileDirtyNote');
+      if (!el) return;
+
+      if (!currentProfileName) {
+        el.style.display = 'none';
+        return;
+      }
+
+      el.style.display = isDirty ? 'block' : 'none';
+    }
+
+    function setupProfileEvents() {
+      const select    = document.getElementById('profileSelect');
+      const saveBtn   = document.getElementById('saveProfileBtn');
+      const deleteBtn = document.getElementById('deleteProfileBtn');
+      const reloadBtn = document.getElementById('reloadProfileBtn');
+
+      if (!select || !saveBtn || !deleteBtn || !reloadBtn) return;
+
+      saveBtn.addEventListener('click', () => {
+        const name = prompt('שם הפרופיל לשמירה:');
+        if (!name) return;
+
+        const trimmed = name.trim();
+        if (!trimmed) return;
+
+        const profiles = loadProfilesFromStorage();
+
+        if (profiles.hasOwnProperty(trimmed)) {
+          const overwrite = confirm(`פרופיל בשם "${trimmed}" כבר קיים.\n\nלדרוס אותו?`);
+          if (!overwrite) return;
+        }
+
+        const full = getStateFromUI();
+
+        const profileState = {
+          shape: full.shape,
+          mode: full.mode,
+
+          diameter: full.diameter,
+          length: full.length,
+          width: full.width,
+
+          thicknessFactor:   full.thicknessFactor,
+          doughPerPizzaInput: full.doughPerPizzaInput,
+
+          hydrationPct: full.hydrationPct,
+          saltPct:      full.saltPct,
+          oilPct:       full.oilPct,
+          sugarPct:     full.sugarPct,
+
+          yeastScale:      full.yeastScale,
+          yeastOverridePct: full.yeastOverridePct
+        };
+
+        profiles[trimmed] = profileState;
+        saveProfilesToStorage(profiles);
+        populateProfileSelect(profiles);
+        select.value = trimmed;
+
+        currentProfileName = trimmed;
+        currentProfileBase = profileState;
+        updateProfileDirtyNote(false);
+      });
+
+      deleteBtn.addEventListener('click', () => {
+        const current = select.value;
+        if (!current) {
+          alert('לא נבחר פרופיל למחיקה.');
+          return;
+        }
+
+        if (!confirm(`למחוק את הפרופיל "${current}"?`)) return;
+
+        const profiles = loadProfilesFromStorage();
+        delete profiles[current];
+        saveProfilesToStorage(profiles);
+        populateProfileSelect(profiles);
+
+        if (currentProfileName === current) {
+          currentProfileName = '';
+          currentProfileBase = null;
+          updateProfileDirtyNote(false);
+        }
+      });
+
+      select.addEventListener('change', () => {
+        const name = select.value;
+        if (!name) {
+          currentProfileName = '';
+          currentProfileBase = null;
+          updateProfileDirtyNote(false);
+          recalc();
+          return;
+        }
+
+        const profiles = loadProfilesFromStorage();
+        const s = profiles[name];
+        if (!s) return;
+
+        applyStateToUI(s);
+        updateVisibility();
+
+        currentProfileName = name;
+        currentProfileBase = s;
+        updateProfileDirtyNote(false);
+
+        recalc();
+      });
+
+      reloadBtn.addEventListener('click', () => {
+        const name = select.value;
+        if (!name) return;
+
+        const profiles = loadProfilesFromStorage();
+        const s = profiles[name];
+        if (!s) return;
+
+        applyStateToUI(s);
+        updateVisibility();
+
+        currentProfileName = name;
+        currentProfileBase = s;
+        updateProfileDirtyNote(false);
+
+        recalc();
+      });
+    }
+
+    function updateVisibility() {
+      const shape =
+        document.querySelector('input[name="shape"]:checked').value;
+      const mode  =
+        document.querySelector('input[name="mode"]:checked').value;
+
+      document.getElementById('field-diameter').style.display =
+        shape === 'round' ? 'block' : 'none';
+      document.getElementById('field-rect').style.display =
+        shape === 'rect' ? 'block' : 'none';
+
+      document.getElementById('field-thickness').style.display =
+        mode === 'thickness' ? 'block' : 'none';
+      document.getElementById('field-dough-per-pizza').style.display =
+        mode === 'weight' ? 'block' : 'none';
+
+      // החלפת האיור בהתאם לצורה
+      const roundImg = document.getElementById('pizzaRound');
+      const rectImg  = document.getElementById('pizzaRect');
+      if (roundImg && rectImg) {
+        if (shape === 'round') {
+          roundImg.style.display = 'block';
+          rectImg.style.display  = 'none';
+        } else {
+          roundImg.style.display = 'none';
+          rectImg.style.display  = 'block';
+        }
+      }
+    }
+
+    const debounce = (fn, delay = 120) => {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
+      };
+    };
+
+    const recalc = debounce(() => {
+      const s = getStateFromUI();
+      const r = computePizzaRecipe(s);
+      renderResults(r, s);
+      saveStateToStorage(s);
+
+      const dirty = isCurrentProfileDirty(s);
+      updateProfileDirtyNote(dirty);
+    });
+
+    function setupSteppers() {
+      document.querySelectorAll('.step-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id   = btn.dataset.target;
+          const step = parseFloat(btn.dataset.step);
+          const min  = btn.dataset.min ? parseFloat(btn.dataset.min) : null;
+          const max  = btn.dataset.max ? parseFloat(btn.dataset.max) : null;
+
+          const el = document.getElementById(id);
+          let val = parseFloat(el.textContent);
+          if (isNaN(val)) val = 0;
+
+          let next = val + step;
+          if (min !== null) next = Math.max(min, next);
+          if (max !== null) next = Math.min(max, next);
+
+          const decimals = (step.toString().split('.')[1] || '').length;
+          const f = Math.pow(10, decimals);
+          next = Math.round(next * f) / f;
+
+          el.textContent = next.toFixed(decimals);
+          recalc();
+        });
+      });
+    }
+
+    function setupInputs() {
+      ['diameter', 'length', 'width', 'doughPerPizzaInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', recalc);
+      });
+    }
+
+    function setupRadios() {
+      document.querySelectorAll('input[name="shape"]').forEach(r => {
+        r.addEventListener('change', () => {
+          updateVisibility();
+          recalc();
+        });
+      });
+      document.querySelectorAll('input[name="mode"]').forEach(r => {
+        r.addEventListener('change', () => {
+          updateVisibility();
+          recalc();
+        });
+      });
+      document.getElementById('yeastOverrideEnabled')
+        .addEventListener('change', recalc);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupSteppers();
+      setupInputs();
+      setupRadios();
+
+      const profiles = loadProfilesFromStorage();
+      populateProfileSelect(profiles);
+      setupProfileEvents();
+
+      loadStateFromStorage();
+      updateVisibility();
+      recalc();
+    });
+  </script>
 </body>
 </html>
