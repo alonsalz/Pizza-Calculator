@@ -201,6 +201,13 @@
       margin-top: 0.2rem;
     }
 
+    .profile-dirty-note {
+      font-size: 0.8rem;
+      color: #c0392b;
+      margin-top: 0.2rem;
+      display: none;
+    }
+
     details summary {
       cursor: pointer;
       font-size: 0.9rem;
@@ -430,18 +437,13 @@
             <option value="">ללא פרופיל</option>
           </select>
           <button type="button" id="saveProfileBtn">שמור</button>
+          <button type="button" id="reloadProfileBtn">↺ שחזר</button>
           <button type="button" id="deleteProfileBtn">מחק</button>
         </div>
         <div class="small-note">
           בחר פרופיל קיים או שמור את ההגדרות הנוכחיות כפרופיל חדש.
         </div>
-        
-        <div class="small-note" id="profileDirtyWarning" style="
-          display:none;
-          color:#b30000;
-          font-weight:600;
-          margin-top:0.3rem;
-        ">
+        <div class="profile-dirty-note" id="profileDirtyNote">
           הפרופיל שונה
         </div>
       </div>
@@ -566,38 +568,47 @@
 
     const STORAGE_KEY  = 'pizzaCalculatorState_v1';
     const PROFILES_KEY = 'pizzaCalculatorProfiles_v1';
-    
+
+    // פרופיל נוכחי + שדות שרלוונטיים להשוואה
     let currentProfileName = '';
     let currentProfileBase = null;
-    
+
     const PROFILE_FIELDS = [
-      'shape', 'mode',
-      'diameter', 'length', 'width',
-      'thicknessFactor', 'doughPerPizzaInput',
-      'hydrationPct', 'saltPct', 'oilPct', 'sugarPct',
-      'yeastScale', 'yeastOverridePct'
+      'shape',
+      'mode',
+      'diameter',
+      'length',
+      'width',
+      'thicknessFactor',
+      'doughPerPizzaInput',
+      'hydrationPct',
+      'saltPct',
+      'oilPct',
+      'sugarPct',
+      'yeastScale',
+      'yeastOverridePct'
     ];
-    
-    function isProfileDirty(currentState) {
-      if (!currentProfileBase) return false;
-    
+
+    function isCurrentProfileDirty(state) {
+      if (!currentProfileName || !currentProfileBase) return false;
+      const p = currentProfileBase;
+
       return PROFILE_FIELDS.some(key => {
-        const ref = currentProfileBase[key];
-        const now = currentState[key];
-    
-        if (ref == null && now == null) return false;
-    
-        const r = Number(ref ?? 0);
-        const n = Number(now ?? 0);
-    
-        return Math.abs(r - n) > 0.000001;
+        const v1 = p[key];
+        const v2 = state[key];
+
+        if (v1 == null && v2 == null) return false;
+
+        const n1 = v1 == null ? 0 : Number(v1);
+        const n2 = v2 == null ? 0 : Number(v2);
+
+        return Math.abs(n1 - n2) > 1e-6;
       });
     }
-    
-    function updateProfileDirtyWarning(isDirty) {
-      const el = document.getElementById('profileDirtyWarning');
+
+    function updateProfileDirtyNote(isDirty) {
+      const el = document.getElementById('profileDirtyNote');
       if (!el) return;
-    
       el.style.display = isDirty ? 'block' : 'none';
     }
 
@@ -880,23 +891,30 @@
       }
     }
 
+    const debounce = (fn, delay = 120) => {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
+      };
+    };
+
+    const recalc = debounce(() => {
+      const s = getStateFromUI();
+      const r = computePizzaRecipe(s);
+      renderResults(r, s);
+      saveStateToStorage(s);
+
+      const dirty = isCurrentProfileDirty(s);
+      updateProfileDirtyNote(dirty);
+    });
+
     function setupProfileEvents() {
       const select = document.getElementById('profileSelect');
       const saveBtn = document.getElementById('saveProfileBtn');
       const deleteBtn = document.getElementById('deleteProfileBtn');
       const reloadBtn = document.getElementById('reloadProfileBtn');
 
-      if (reloadBtn) {
-        reloadBtn.addEventListener('click', () => {
-          if (!currentProfileName || !currentProfileBase) return;
-      
-          applyStateToUI(currentProfileBase);
-          updateVisibility();
-      
-          updateProfileDirtyWarning(false);
-          recalc();
-        });
-      
       if (!select || !saveBtn || !deleteBtn) return;
 
       saveBtn.addEventListener('click', () => {
@@ -939,6 +957,11 @@
         saveProfilesToStorage(profiles);
         populateProfileSelect(profiles);
         select.value = trimmed;
+
+        currentProfileName = trimmed;
+        currentProfileBase = profileState;
+        updateProfileDirtyNote(false);
+        recalc();
       });
 
       deleteBtn.addEventListener('click', () => {
@@ -954,11 +977,24 @@
         delete profiles[current];
         saveProfilesToStorage(profiles);
         populateProfileSelect(profiles);
+
+        if (currentProfileName === current) {
+          currentProfileName = '';
+          currentProfileBase = null;
+          updateProfileDirtyNote(false);
+          recalc();
+        }
       });
 
       select.addEventListener('change', () => {
         const name = select.value;
-        if (!name) return;
+        if (!name) {
+          currentProfileName = '';
+          currentProfileBase = null;
+          updateProfileDirtyNote(false);
+          recalc();
+          return;
+        }
 
         const profiles = loadProfilesFromStorage();
         const s = profiles[name];
@@ -966,13 +1002,33 @@
 
         applyStateToUI(s);
         updateVisibility();
-      
+
         currentProfileName = name;
-        currentProfileBase = structuredClone ? structuredClone(s) : JSON.parse(JSON.stringify(s));
-      
-        updateProfileDirtyWarning(false);
+        currentProfileBase = s;
+        updateProfileDirtyNote(false);
+
         recalc();
       });
+
+      if (reloadBtn) {
+        reloadBtn.addEventListener('click', () => {
+          const name = select.value;
+          if (!name) return;
+
+          const profiles = loadProfilesFromStorage();
+          const s = profiles[name];
+          if (!s) return;
+
+          applyStateToUI(s);
+          updateVisibility();
+
+          currentProfileName = name;
+          currentProfileBase = s;
+          updateProfileDirtyNote(false);
+
+          recalc();
+        });
+      }
     }
 
     function updateVisibility() {
@@ -991,25 +1047,6 @@
       document.getElementById('field-dough-per-pizza').style.display =
         mode === 'weight' ? 'block' : 'none';
     }
-
-    const debounce = (fn, delay = 120) => {
-      let t;
-      return (...args) => {
-        clearTimeout(t);
-        t = setTimeout(() => fn(...args), delay);
-      };
-    };
-
-    const recalc = debounce(() => {
-      const s = getStateFromUI();
-      const r = computePizzaRecipe(s);
-      renderResults(r, s);
-      saveStateToStorage(s);
-    
-      // בדיקה אם הפרופיל שונה
-      const dirty = isProfileDirty(s);
-      updateProfileDirtyWarning(dirty);
-    });
 
     function setupSteppers() {
       document.querySelectorAll('.step-btn').forEach(btn => {
@@ -1072,10 +1109,10 @@
 
       loadStateFromStorage();
       updateVisibility();
+      updateProfileDirtyNote(false);
       recalc();
     });
   </script>
 
 </body>
 </html>
-
