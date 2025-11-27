@@ -201,11 +201,11 @@
       margin-top: 0.2rem;
     }
 
-    .profile-dirty-note {
+    .profile-dirty {
       font-size: 0.8rem;
-      color: #c0392b;
+      color: #b22222;
       margin-top: 0.2rem;
-      display: none;
+      display: none; /* מוצג רק כשהפרופיל שונה */
     }
 
     details summary {
@@ -250,7 +250,6 @@
       font-weight: 550;
       color: #4a3a2e;
       margin-top: 0.2rem;
-
       display: flex;
       gap: 0.35rem;
       flex-wrap: wrap;
@@ -437,13 +436,13 @@
             <option value="">ללא פרופיל</option>
           </select>
           <button type="button" id="saveProfileBtn">שמור</button>
-          <button type="button" id="reloadProfileBtn">↺ שחזר</button>
+          <button type="button" id="reloadProfileBtn">שחזר</button>
           <button type="button" id="deleteProfileBtn">מחק</button>
         </div>
         <div class="small-note">
           בחר פרופיל קיים או שמור את ההגדרות הנוכחיות כפרופיל חדש.
         </div>
-        <div class="profile-dirty-note" id="profileDirtyNote">
+        <div class="profile-dirty" id="profileDirtyMsg">
           הפרופיל שונה
         </div>
       </div>
@@ -569,7 +568,6 @@
     const STORAGE_KEY  = 'pizzaCalculatorState_v1';
     const PROFILES_KEY = 'pizzaCalculatorProfiles_v1';
 
-    // פרופיל נוכחי + שדות שרלוונטיים להשוואה
     let currentProfileName = '';
     let currentProfileBase = null;
 
@@ -588,29 +586,6 @@
       'yeastScale',
       'yeastOverridePct'
     ];
-
-    function isCurrentProfileDirty(state) {
-      if (!currentProfileName || !currentProfileBase) return false;
-      const p = currentProfileBase;
-
-      return PROFILE_FIELDS.some(key => {
-        const v1 = p[key];
-        const v2 = state[key];
-
-        if (v1 == null && v2 == null) return false;
-
-        const n1 = v1 == null ? 0 : Number(v1);
-        const n2 = v2 == null ? 0 : Number(v2);
-
-        return Math.abs(n1 - n2) > 1e-6;
-      });
-    }
-
-    function updateProfileDirtyNote(isDirty) {
-      const el = document.getElementById('profileDirtyNote');
-      if (!el) return;
-      el.style.display = isDirty ? 'block' : 'none';
-    }
 
     function findBoundingIndices(value, arr) {
       if (value <= arr[0]) return [0,0];
@@ -781,19 +756,16 @@
     }
 
     function applyStateToUI(s) {
-      // צורה
       if (s.shape === 'round' || s.shape === 'rect') {
         const shapeRadio = document.querySelector(`input[name="shape"][value="${s.shape}"]`);
         if (shapeRadio) shapeRadio.checked = true;
       }
 
-      // מצב חישוב
       if (s.mode === 'thickness' || s.mode === 'weight') {
         const modeRadio = document.querySelector(`input[name="mode"][value="${s.mode}"]`);
         if (modeRadio) modeRadio.checked = true;
       }
 
-      // ערכי input
       if (typeof s.diameter === 'number') document.getElementById('diameter').value = s.diameter;
       if (typeof s.length   === 'number') document.getElementById('length').value   = s.length;
       if (typeof s.width    === 'number') document.getElementById('width').value    = s.width;
@@ -827,6 +799,29 @@
       } else {
         document.getElementById('yeastOverrideEnabled').checked = false;
       }
+    }
+
+    function isCurrentProfileDirty(state) {
+      if (!currentProfileName || !currentProfileBase) return false;
+      const p = currentProfileBase;
+
+      return PROFILE_FIELDS.some(key => {
+        const v1 = p[key];
+        const v2 = state[key];
+
+        if (v1 == null && v2 == null) return false;
+
+        const n1 = v1 == null ? 0 : Number(v1);
+        const n2 = v2 == null ? 0 : Number(v2);
+
+        return Math.abs(n1 - n2) > 1e-6;
+      });
+    }
+
+    function updateProfileDirtyMessage(isDirty) {
+      const el = document.getElementById('profileDirtyMsg');
+      if (!el) return;
+      el.style.display = isDirty ? 'block' : 'none';
     }
 
     function saveStateToStorage(state) {
@@ -891,6 +886,23 @@
       }
     }
 
+    function updateVisibility() {
+      const shape =
+        document.querySelector('input[name="shape"]:checked').value;
+      const mode  =
+        document.querySelector('input[name="mode"]:checked').value;
+
+      document.getElementById('field-diameter').style.display =
+        shape === 'round' ? 'block' : 'none';
+      document.getElementById('field-rect').style.display =
+        shape === 'rect' ? 'block' : 'none';
+
+      document.getElementById('field-thickness').style.display =
+        mode === 'thickness' ? 'block' : 'none';
+      document.getElementById('field-dough-per-pizza').style.display =
+        mode === 'weight' ? 'block' : 'none';
+    }
+
     const debounce = (fn, delay = 120) => {
       let t;
       return (...args) => {
@@ -906,7 +918,7 @@
       saveStateToStorage(s);
 
       const dirty = isCurrentProfileDirty(s);
-      updateProfileDirtyNote(dirty);
+      updateProfileDirtyMessage(dirty);
     });
 
     function setupProfileEvents() {
@@ -960,7 +972,7 @@
 
         currentProfileName = trimmed;
         currentProfileBase = profileState;
-        updateProfileDirtyNote(false);
+        updateProfileDirtyMessage(false);
         recalc();
       });
 
@@ -981,7 +993,7 @@
         if (currentProfileName === current) {
           currentProfileName = '';
           currentProfileBase = null;
-          updateProfileDirtyNote(false);
+          updateProfileDirtyMessage(false);
           recalc();
         }
       });
@@ -991,7 +1003,7 @@
         if (!name) {
           currentProfileName = '';
           currentProfileBase = null;
-          updateProfileDirtyNote(false);
+          updateProfileDirtyMessage(false);
           recalc();
           return;
         }
@@ -1005,7 +1017,7 @@
 
         currentProfileName = name;
         currentProfileBase = s;
-        updateProfileDirtyNote(false);
+        updateProfileDirtyMessage(false);
 
         recalc();
       });
@@ -1024,28 +1036,11 @@
 
           currentProfileName = name;
           currentProfileBase = s;
-          updateProfileDirtyNote(false);
+          updateProfileDirtyMessage(false);
 
           recalc();
         });
       }
-    }
-
-    function updateVisibility() {
-      const shape =
-        document.querySelector('input[name="shape"]:checked').value;
-      const mode  =
-        document.querySelector('input[name="mode"]:checked').value;
-
-      document.getElementById('field-diameter').style.display =
-        shape === 'round' ? 'block' : 'none';
-      document.getElementById('field-rect').style.display =
-        shape === 'rect' ? 'block' : 'none';
-
-      document.getElementById('field-thickness').style.display =
-        mode === 'thickness' ? 'block' : 'none';
-      document.getElementById('field-dough-per-pizza').style.display =
-        mode === 'weight' ? 'block' : 'none';
     }
 
     function setupSteppers() {
@@ -1109,7 +1104,7 @@
 
       loadStateFromStorage();
       updateVisibility();
-      updateProfileDirtyNote(false);
+      updateProfileDirtyMessage(false);
       recalc();
     });
   </script>
