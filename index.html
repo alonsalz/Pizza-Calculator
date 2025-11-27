@@ -753,11 +753,14 @@
     function isCurrentProfileDirty(state) {
       if (!currentProfileName || !currentProfileBase) return false;
       const p = currentProfileBase;
-
+    
+      // ⭐ תיקון חדש — שינוי צורה = תמיד שינוי בפרופיל
+      if (state.shape !== p.shape) return true;
+    
       return PROFILE_FIELDS.some(key => {
         const v1 = p[key];
         const v2 = state[key];
-
+    
         if (v1 == null && v2 == null) return false;
         const n1 = v1 == null ? 0 : Number(v1);
         const n2 = v2 == null ? 0 : Number(v2);
@@ -1094,3 +1097,4 @@
   </script>
 </body>
 </html>
+
